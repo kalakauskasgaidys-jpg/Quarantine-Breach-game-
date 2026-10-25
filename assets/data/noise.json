@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "fade_time": "Seconds a noise event stays alive (the debug ring expands and fades over this time)",
+    "movement": "emit_interval: seconds between footstep noises of a moving soldier; base_radius: metres a walking soldier is heard; armor_radius_per_reduction: extra metres per 1.0 of armor damage_reduction (heavier armor is louder)",
+    "rings": "Debug noise-ring overlay: segments: whole number >= 3 per circle; color_quiet/color_loud as RGBA 0..1, blended by radius; loud_radius: radius in metres that gets the full loud colour"
+  },
+  "fade_time": 1.5,
+  "movement": {
+    "emit_interval": 0.5,
+    "base_radius": 5.0,
+    "armor_radius_per_reduction": 10.0
+  },
+  "rings": {
+    "segments": 40,
+    "color_quiet": [
+      0.3,
+      0.8,
+      1.0,
+      1.0
+    ],
+    "color_loud": [
+      1.0,
+      0.25,
+      0.1,
+      1.0
+    ],
+    "loud_radius": 60.0
+  }
+}

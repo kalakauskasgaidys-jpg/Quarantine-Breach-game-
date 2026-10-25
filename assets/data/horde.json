@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "seed": "Random seed for spawn positions and roaming headings (same seed = same horde)",
+    "flow_cell_size": "Edge in metres of the shared flow-field grid",
+    "field_recompute_interval": "Minimum seconds between flow-field recomputes (the field is rebuilt on a worker thread)",
+    "obstacle_margin": "Metres buildings are grown by when blocking the flow-field grid",
+    "zombie": "hit_points: shots needed scale with this; roam_speed/alert_speed/chase_speed: metres per second when wandering / following noise / chasing a seen soldier; sight_range: metres a zombie sees a soldier (needs line of sight); contact_range: metres at which it bites; attack_damage/attack_interval: damage per bite and seconds between bites; perception_interval: seconds between sight checks per zombie; roam_turn_min/roam_turn_max: seconds between heading changes of a roaming zombie",
+    "attractors": "memory_seconds: how long a noise keeps drawing the horde; merge_distance: noises closer than this share one attractor (metres); max_count: whole number >= 1, attractors kept at once; loudness_weight: path-length handicap in metres per metre of radius a quieter noise has versus the loudest (higher = loudest wins from further away)",
+    "spawn": "safe_radius: metres around player spawn points and soldiers kept free of newly spawned zombies; attempts: whole number >= 1, random positions tried per zombie",
+    "heat_map": "Debug heat-map overlay: cell_size in metres; refresh_interval seconds; full_density: zombies per cell that get color_high; color_low/color_high RGBA 0..1",
+    "separation": "Crowd spacing via a spatial hash: radius: metres within which zombies push apart (also the hash cell size); strength: push speed in metres per second at full overlap; max_neighbors: whole number, most neighbours read per zombie per step (caps cost in dense crowds); update_interval: seconds between push recomputes per zombie (staggered across zombies; the hash is rebuilt at the same rate)",
+    "last_seen": "A chasing zombie that loses sight of its soldier heads for where it last saw it: pull_strength: loudness in metres of that quiet attractor (low = only pulls nearby zombies already following the field); lifetime: seconds it lasts; arrive_distance: metres from the spot at which the zombie gives up and goes home"
+  },
+  "seed": 20261025,
+  "flow_cell_size": 1.0,
+  "field_recompute_interval": 0.25,
+  "obstacle_margin": 0.3,
+  "zombie": {
+    "hit_points": 60,
+    "roam_speed": 0.8,
+    "alert_speed": 1.6,
+    "chase_speed": 2.2,
+    "sight_range": 10.0,
+    "contact_range": 1.1,
+    "attack_damage": 8.0,
+    "attack_interval": 1.0,
+    "perception_interval": 0.4,
+    "roam_turn_min": 2.0,
+    "roam_turn_max": 5.0
+  },
+  "separation": {
+    "radius": 0.8,
+    "strength": 1.2,
+    "max_neighbors": 6,
+    "update_interval": 0.1
+  },
+  "last_seen": {
+    "pull_strength": 6.0,
+    "lifetime": 8.0,
+    "arrive_distance": 1.0
+  },
+  "attractors": {
+    "memory_seconds": 20.0,
+    "merge_distance": 4.0,
+    "max_count": 32,
+    "loudness_weight": 0.5
+  },
+  "spawn": {
+    "safe_radius": 18.0,
+    "attempts": 30
+  },
+  "heat_map": {
+    "cell_size": 3.0,
+    "refresh_interval": 0.25,
+    "full_density": 8.0,
+    "color_low": [
+      0.1,
+      0.3,
+      1.0,
+      0.35
+    ],
+    "color_high": [
+      1.0,
+      0.1,
+      0.05,
+      0.75
+    ]
+  }
+}

@@ -41,6 +41,7 @@
 - More town types: dense city blocks, rural farmland, industrial areas
 - A rotatable 360° camera with zoom
 - Zombie variants (runners, bloated, armored), each visibly distinct
+- A cheap zombie shamble (lean, sway, lurch), done in a shader rather than per-zombie script code
 
 ## Build order
 1. A greybox block with one squad (classes and loadouts) versus noise-drawn zombies. This is the risky core: prove that "loud vs quiet" is fun.
@@ -62,7 +63,7 @@
 - Night is dark, and flashlight and streetlight cones are what reveal the map.
 - The fog of war is black where never explored and grey where already seen.
 - The world takes light damage: broken windows, burnt cars, bullet marks.
-- Soldiers animate smoothly, and zombies move in a jerky, shambling way.
+- Soldiers animate smoothly. Zombies move simply for now: they face where they walk and spread apart, without a shamble animation.
 - Noise rings, a horde heat map and infection countdowns make threats readable.
 - The UI is pixel art, and the region map uses the same pixel style with sectors colored by infection.
 

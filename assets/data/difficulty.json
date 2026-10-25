@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "default_preset": "Preset id used when none is chosen (story 007 makes this a campaign choice)",
+    "presets": "Per preset: display_name; horde_size: whole number >= 0, zombies standing in the horde at mission start (they move only when drawn by noise or sight); roaming_count: whole number >= 0, zombies that wander the map on their own in daylight (time of day multiplies it)"
+  },
+  "default_preset": "normal",
+  "presets": {
+    "easy": {
+      "display_name": "Easy",
+      "horde_size": 80,
+      "roaming_count": 10
+    },
+    "normal": {
+      "display_name": "Normal",
+      "horde_size": 200,
+      "roaming_count": 25
+    },
+    "hard": {
+      "display_name": "Hard",
+      "horde_size": 400,
+      "roaming_count": 50
+    }
+  }
+}

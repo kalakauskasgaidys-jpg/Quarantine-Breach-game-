@@ -23,6 +23,10 @@ var health: float = 0.0
 var fog: FogOfWar
 ## Seconds between target scans while nothing is in range.
 var retarget_interval: float = 0.25
+## Horde the soldier can shoot at (story 002); null when the mission has none.
+var horde: HordeManager
+## Multiplies sight range; time of day sets it below 1.0 at night.
+var sight_multiplier: float = 1.0
 
 var _body_color: Color
 var _ring_color: Color
@@ -107,6 +111,16 @@ func order_move(target: Vector3) -> void:
 	_moving = true
 
 
+## True while the soldier is walking an order (moving soldiers make noise).
+func is_moving() -> bool:
+	return _moving
+
+
+## Sight range in metres after the time-of-day multiplier.
+func current_sight_range() -> float:
+	return stats.sight_range * sight_multiplier
+
+
 ## Applies [param amount] damage after armor; frees the soldier at zero hit points.
 ## Hits on an already-dead soldier are ignored, so [signal died] fires once.
 func take_damage(amount: float) -> void:
@@ -139,20 +153,32 @@ func _step_along_path(delta: float) -> void:
 	global_position += to_next.limit_length(step)
 
 
+## Shoots the nearer of the best dummy and the best zombie in reach, if any.
 func _try_fire() -> void:
-	var target := _find_target()
-	if target == null:
+	var reach := minf(stats.weapon_range, current_sight_range())
+	var dummy := _find_target(reach)
+	var zombie := -1
+	if horde != null:
+		zombie = horde.find_target(global_position, reach, fog)
+	if dummy == null and zombie < 0:
 		_cooldown = retarget_interval
 		return
 	_cooldown = stats.fire_interval
-	target.take_damage(stats.weapon_damage)
-	shot_fired.emit(global_position + Vector3.UP * 1.2, target.global_position + Vector3.UP, stats.noise)
+	var aim_point: Vector3
+	if zombie >= 0 and (dummy == null or global_position.distance_squared_to(horde.zombie_position(zombie))
+			<= global_position.distance_squared_to(dummy.global_position)):
+		aim_point = horde.zombie_position(zombie)
+		horde.damage_zombie(zombie, stats.weapon_damage)
+	else:
+		aim_point = dummy.global_position
+		dummy.take_damage(stats.weapon_damage)
+	shot_fired.emit(global_position + Vector3.UP * 1.2, aim_point + Vector3.UP, stats.noise)
 
 
-## Nearest living target inside weapon range and sight range with a clear line of sight.
-func _find_target() -> TargetDummy:
+## Nearest living target inside [param reach] metres with a clear line of sight.
+func _find_target(reach: float) -> TargetDummy:
 	var best: TargetDummy = null
-	var best_sq := minf(stats.weapon_range, stats.sight_range) ** 2
+	var best_sq := reach ** 2
 	for node in get_tree().get_nodes_in_group(&"targets"):
 		var candidate := node as TargetDummy
 		if candidate == null or not candidate.is_alive():

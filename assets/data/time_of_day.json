@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "default_mode": "Time of day used when a mission does not set one (missions pick 'day' or 'night')",
+    "modes": "Per mode ('day' and 'night' are required): display_name; sight_range_multiplier: multiplies every soldier's sight range; zombie_sight_multiplier: multiplies zombie sight range; roaming_multiplier: multiplies the difficulty's roaming_count; ambient_color/ambient_energy/background_color/sun_energy: lighting (colours RGB or RGBA 0..1)"
+  },
+  "default_mode": "day",
+  "modes": {
+    "day": {
+      "display_name": "Day",
+      "sight_range_multiplier": 1.0,
+      "zombie_sight_multiplier": 1.0,
+      "roaming_multiplier": 1.0,
+      "ambient_color": [
+        0.75,
+        0.75,
+        0.8
+      ],
+      "ambient_energy": 0.8,
+      "sun_energy": 1.0,
+      "background_color": [
+        0.05,
+        0.05,
+        0.07
+      ]
+    },
+    "night": {
+      "display_name": "Night",
+      "sight_range_multiplier": 0.6,
+      "zombie_sight_multiplier": 0.5,
+      "roaming_multiplier": 2.5,
+      "ambient_color": [
+        0.42,
+        0.48,
+        0.8
+      ],
+      "ambient_energy": 0.9,
+      "sun_energy": 0.35,
+      "background_color": [
+        0.01,
+        0.01,
+        0.03
+      ]
+    }
+  }
+}

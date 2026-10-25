@@ -1,12 +1,12 @@
 # Story 002: Noise-driven horde and time of day
 
 > **Epic**: quarantine-breach
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-25
 
 ## Context
 
@@ -62,12 +62,20 @@ N/A (minimal — no control manifest)
 
 ## Files
 
-- `src/horde/` (noise system, flow field, horde manager)
+- `src/horde/flow_field.gd`
+- `src/horde/horde_debug_controls.gd`
+- `src/horde/horde_heat_map.gd`
+- `src/horde/horde_manager.gd`
+- `src/horde/noise_rings_overlay.gd`
+- `src/horde/noise_system.gd`
 - `src/world/time_of_day.gd`
-- `assets/data/noise.json`, `assets/data/difficulty.json`
-- `tests/unit/horde/noise_horde_test.gd`
-
----
+- `src/squads/game_data.gd`
+- `src/squads/soldier.gd`
+- `src/squads/greybox_block.gd`
+- `assets/data/noise.json`
+- `assets/data/horde.json`
+- `assets/data/difficulty.json`
+- `assets/data/time_of_day.json`
 
 ## QA Test Cases
 
