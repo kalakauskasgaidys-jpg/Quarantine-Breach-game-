@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "slots": "Gear slots in display order",
+    "slot": "Which slot the item fits",
+    "display_name": "Name shown in the loadout panel",
+    "damage": "Weapons only: damage per shot before multipliers",
+    "range": "Weapons only: metres a shot reaches before multipliers",
+    "fire_interval": "Weapons only: seconds between shots",
+    "noise": "Weapons only: noise radius in metres created by one shot (read by the horde in story 002)",
+    "max_health_bonus": "Optional: added to the soldier's hit points",
+    "move_speed_multiplier": "Optional: multiplies move speed (weight); 1.0 = unchanged",
+    "sight_range_bonus": "Optional: metres added to sight range",
+    "damage_reduction": "Optional: fraction of incoming damage ignored, 0..1; stacks by addition",
+    "damage_multiplier": "Optional: multiplies outgoing weapon damage",
+    "range_multiplier": "Optional: multiplies weapon range",
+    "noise_multiplier": "Optional: multiplies shot noise; 1.0 = unchanged"
+  },
+  "slots": ["primary_weapon", "sidearm", "suppressor", "armor", "grenades", "medkit"],
+  "items": {
+    "assault_rifle": {
+      "slot": "primary_weapon", "display_name": "Assault rifle",
+      "damage": 20, "range": 16, "fire_interval": 0.6, "noise": 40
+    },
+    "shotgun": {
+      "slot": "primary_weapon", "display_name": "Shotgun",
+      "damage": 45, "range": 8, "fire_interval": 1.2, "noise": 55
+    },
+    "hunting_rifle": {
+      "slot": "primary_weapon", "display_name": "Hunting rifle",
+      "damage": 60, "range": 24, "fire_interval": 2.0, "noise": 70,
+      "sight_range_bonus": 2
+    },
+    "machine_gun": {
+      "slot": "primary_weapon", "display_name": "Machine gun",
+      "damage": 12, "range": 14, "fire_interval": 0.2, "noise": 60,
+      "move_speed_multiplier": 0.95
+    },
+    "pistol": {
+      "slot": "sidearm", "display_name": "Pistol",
+      "damage": 12, "range": 10, "fire_interval": 0.8, "noise": 25
+    },
+    "revolver": {
+      "slot": "sidearm", "display_name": "Revolver",
+      "damage": 25, "range": 11, "fire_interval": 1.2, "noise": 45
+    },
+    "suppressor_basic": {
+      "slot": "suppressor", "display_name": "Suppressor",
+      "noise_multiplier": 0.25, "damage_multiplier": 0.9, "range_multiplier": 0.9
+    },
+    "light_vest": {
+      "slot": "armor", "display_name": "Light vest",
+      "damage_reduction": 0.15, "move_speed_multiplier": 0.97
+    },
+    "heavy_armor": {
+      "slot": "armor", "display_name": "Heavy armor",
+      "damage_reduction": 0.35, "max_health_bonus": 20, "move_speed_multiplier": 0.88
+    },
+    "frag_grenades": {
+      "slot": "grenades", "display_name": "Frag grenades",
+      "move_speed_multiplier": 0.97
+    },
+    "field_medkit": {
+      "slot": "medkit", "display_name": "Field medkit",
+      "move_speed_multiplier": 0.98
+    }
+  }
+}

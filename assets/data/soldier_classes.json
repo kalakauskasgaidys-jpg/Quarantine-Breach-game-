@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "field_docs": {
+    "display_name": "Name shown in the loadout panel",
+    "max_health": "Hit points before gear bonuses",
+    "move_speed": "Metres per second before gear multipliers",
+    "sight_range": "Line-of-sight radius in metres before gear bonuses",
+    "damage_multiplier": "Scales the equipped weapon's damage; 1.0 = unchanged",
+    "color": "Placeholder body colour as [r, g, b], each 0..1",
+    "default_gear": "Gear id per slot picked automatically with this class; empty string = empty slot"
+  },
+  "classes": {
+    "rifleman": {
+      "display_name": "Rifleman",
+      "max_health": 100,
+      "move_speed": 4.0,
+      "sight_range": 14,
+      "damage_multiplier": 1.0,
+      "color": [0.35, 0.55, 0.30],
+      "default_gear": {
+        "primary_weapon": "assault_rifle",
+        "sidearm": "pistol",
+        "suppressor": "",
+        "armor": "light_vest",
+        "grenades": "frag_grenades",
+        "medkit": ""
+      }
+    },
+    "medic": {
+      "display_name": "Medic",
+      "max_health": 80,
+      "move_speed": 4.2,
+      "sight_range": 13,
+      "damage_multiplier": 0.9,
+      "color": [0.85, 0.85, 0.85],
+      "default_gear": {
+        "primary_weapon": "",
+        "sidearm": "pistol",
+        "suppressor": "",
+        "armor": "",
+        "grenades": "",
+        "medkit": "field_medkit"
+      }
+    },
+    "engineer": {
+      "display_name": "Engineer",
+      "max_health": 90,
+      "move_speed": 3.8,
+      "sight_range": 13,
+      "damage_multiplier": 0.95,
+      "color": [0.85, 0.60, 0.20],
+      "default_gear": {
+        "primary_weapon": "shotgun",
+        "sidearm": "",
+        "suppressor": "",
+        "armor": "light_vest",
+        "grenades": "",
+        "medkit": ""
+      }
+    },
+    "scout": {
+      "display_name": "Scout",
+      "max_health": 70,
+      "move_speed": 5.2,
+      "sight_range": 18,
+      "damage_multiplier": 0.85,
+      "color": [0.30, 0.55, 0.85],
+      "default_gear": {
+        "primary_weapon": "hunting_rifle",
+        "sidearm": "revolver",
+        "suppressor": "suppressor_basic",
+        "armor": "",
+        "grenades": "",
+        "medkit": ""
+      }
+    },
+    "heavy": {
+      "display_name": "Heavy",
+      "max_health": 150,
+      "move_speed": 3.0,
+      "sight_range": 12,
+      "damage_multiplier": 1.2,
+      "color": [0.65, 0.25, 0.25],
+      "default_gear": {
+        "primary_weapon": "machine_gun",
+        "sidearm": "",
+        "suppressor": "",
+        "armor": "heavy_armor",
+        "grenades": "frag_grenades",
+        "medkit": ""
+      }
+    }
+  }
+}

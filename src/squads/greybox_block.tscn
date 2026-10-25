@@ -1,0 +1,163 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/squads/greybox_block.gd" id="1_block"]
+[ext_resource type="Script" path="res://src/squads/camera_rig.gd" id="2_rig"]
+[ext_resource type="Script" path="res://src/squads/selection_controller.gd" id="3_select"]
+[ext_resource type="Script" path="res://src/squads/loadout_panel.gd" id="4_panel"]
+[ext_resource type="Script" path="res://src/squads/target_dummy.gd" id="5_dummy"]
+
+[sub_resource type="Environment" id="Environment_block"]
+background_mode = 1
+background_color = Color(0.05, 0.05, 0.07, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.75, 0.75, 0.8, 1)
+ambient_light_energy = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(60, 0.2, 60)
+
+[sub_resource type="StandardMaterial3D" id="Material_ground"]
+albedo_color = Color(0.32, 0.36, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_building"]
+size = Vector3(1, 3, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_building"]
+albedo_color = Color(0.5, 0.48, 0.45, 1)
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_block"]
+agent_height = 1.6
+agent_radius = 0.5
+
+[node name="GreyboxBlock" type="Node3D"]
+script = ExtResource("1_block")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_block")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, 30, 0)
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_block")
+
+[node name="Ground" type="MeshInstance3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("Material_ground")
+
+[node name="HouseA" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(8, 0, 0, 0, 1, 0, 0, 0, 6, -12, 1.5, 0)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseB" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 10, 4, 1.5, -6)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseC" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 6, 14, 1.5, 4)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseD" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(12, 0, 0, 0, 1, 0, 0, 0, 5, -4, 1.5, -16)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseE" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 8, -18, 1.5, -12)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseF" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(7, 0, 0, 0, 1, 0, 0, 0, 5, 20, 1.5, -14)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="HouseG" type="MeshInstance3D" parent="NavigationRegion3D" groups=["obstacles"]]
+transform = Transform3D(4, 0, 0, 0, 1, 0, 0, 0, 3, 0, 1.5, 8)
+mesh = SubResource("BoxMesh_building")
+surface_material_override/0 = SubResource("Material_building")
+
+[node name="Targets" type="Node3D" parent="."]
+
+[node name="Dummy1" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -6)
+script = ExtResource("5_dummy")
+
+[node name="Dummy2" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -14)
+script = ExtResource("5_dummy")
+
+[node name="Dummy3" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, -6)
+script = ExtResource("5_dummy")
+
+[node name="Dummy4" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -8)
+script = ExtResource("5_dummy")
+
+[node name="Dummy5" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -10)
+script = ExtResource("5_dummy")
+
+[node name="Dummy6" type="Node3D" parent="Targets"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0, 6)
+script = ExtResource("5_dummy")
+
+[node name="SpawnPoints" type="Node3D" parent="."]
+
+[node name="Spawn1" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 22)
+
+[node name="Spawn2" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 22)
+
+[node name="Spawn3" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 22)
+
+[node name="Soldiers" type="Node3D" parent="."]
+
+[node name="CameraRig" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
+script = ExtResource("2_rig")
+
+[node name="Pivot" type="Node3D" parent="CameraRig"]
+rotation_degrees = Vector3(-55, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 80)
+projection = 1
+size = 28.0
+far = 300.0
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="SelectionController" type="Control" parent="Hud"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_select")
+
+[node name="StatusLabel" type="Label" parent="Hud"]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 600.0
+offset_bottom = 32.0
+mouse_filter = 2
+
+[node name="LoadoutPanel" type="PanelContainer" parent="Hud"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_panel")

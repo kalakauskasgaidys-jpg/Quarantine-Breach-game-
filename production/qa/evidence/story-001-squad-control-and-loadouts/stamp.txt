@@ -1,0 +1,16 @@
+Reviewed-Content-Hash: src/squads/camera_rig.gd eb4403f479a634f6c94426927654a2ad3283b6da
+Reviewed-Content-Hash: src/squads/fog_of_war.gd 6e40747a95fb29ddbfd723ea78ea2ef55118990e
+Reviewed-Content-Hash: src/squads/fog_overlay.gd af05cf61802345b1ba30612a349069860ac7d6bb
+Reviewed-Content-Hash: src/squads/game_data.gd e878fa04a2acb512bff3137086a816b430e4a5fe
+Reviewed-Content-Hash: src/squads/greybox_block.gd e2ca1f3e4cad247c3661ca230b3346b115149072
+Reviewed-Content-Hash: src/squads/greybox_block.tscn b7876fed0e32dc8ead22afbb7aadc2b0dc8d0964
+Reviewed-Content-Hash: src/squads/loadout_panel.gd 8bcd6644aa79d38c4a61616bd9d9e6f0a6612da2
+Reviewed-Content-Hash: src/squads/selection_controller.gd 4e76480276a921ca55415b5493f5d75eb3a26c29
+Reviewed-Content-Hash: src/squads/soldier.gd dd5c3aa7ca5360db106cbe745fa97b117834b8ff
+Reviewed-Content-Hash: src/squads/soldier_loadout.gd dc231c562b0626e35322168bc4d31f57a4828ad9
+Reviewed-Content-Hash: src/squads/soldier_stats.gd c22ff4d2ae50eccba818f35950d94bf47f4dce1b
+Reviewed-Content-Hash: src/squads/squad.gd 1b55811339cae0d0be3a728ea1d595ca16451451
+Reviewed-Content-Hash: src/squads/target_dummy.gd f9b328591abb675314998bc491bfd64068734809
+Reviewed-Content-Hash: assets/data/soldier_classes.json 1d4f4d3c515c201c328a9707bb907dd64c89bfe3
+Reviewed-Content-Hash: assets/data/gear.json 521636531b4143dc45b8d7daa851ef87f6671e9c
+Reviewed-Content-Hash: assets/data/squad_greybox.json 1b177834079b6d00432bc412245dab5ea422a5c0
