@@ -13,6 +13,8 @@ extends RefCounted
 ##   fire_interval. Its damage = weapon damage * class damage_multiplier *
 ##   product of gear damage_multiplier; range and noise scale the same way.
 
+## Class id from soldier_classes.json (story 003 reads it for the medic ability).
+var class_id: String = ""
 var max_health: float = 0.0
 var move_speed: float = 0.0
 var sight_range: float = 0.0
@@ -25,14 +27,20 @@ var weapon_range: float = 0.0
 var fire_interval: float = 0.0
 ## Noise radius in metres of one shot; story 002 reads this to draw the horde.
 var noise: float = 0.0
+## Loot weight that causes the full carry slow-down (class carry_capacity, story 004).
+var carry_capacity: float = 0.0
+## Antidote uses carried (story 003): sum of the gear's antidote_uses.
+var antidote_uses: int = 0
 
 
 ## Computes stats for [param loadout] from the loaded data.
 static func build(loadout: SoldierLoadout, data: GameData) -> SoldierStats:
 	var cls: Dictionary = data.classes[loadout.class_id]
 	var stats := SoldierStats.new()
+	stats.class_id = loadout.class_id
 	stats.max_health = cls["max_health"]
 	stats.move_speed = cls["move_speed"]
+	stats.carry_capacity = cls["carry_capacity"]
 	stats.sight_range = cls["sight_range"]
 	var damage_mult: float = cls["damage_multiplier"]
 	var range_mult := 1.0
@@ -44,6 +52,7 @@ static func build(loadout: SoldierLoadout, data: GameData) -> SoldierStats:
 			continue
 		var item: Dictionary = data.gear_items[gear_id]
 		stats.max_health += item.get("max_health_bonus", 0.0)
+		stats.antidote_uses += int(item.get("antidote_uses", 0))
 		stats.move_speed *= item.get("move_speed_multiplier", 1.0)
 		stats.sight_range += item.get("sight_range_bonus", 0.0)
 		stats.damage_reduction += item.get("damage_reduction", 0.0)

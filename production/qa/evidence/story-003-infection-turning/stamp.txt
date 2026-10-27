@@ -1,0 +1,14 @@
+Reviewed-Content-Hash: src/infection/infectable.gd 5cbdcbb66fd180a501851efe8b70feed54c678c5
+Reviewed-Content-Hash: src/infection/infection_controls.gd fea245c6867bc612af72c6613927f2eabf0080e9
+Reviewed-Content-Hash: src/infection/infection_countdown.gd 5357bb127c55c8ae37e98d5fe526a8d0c7aee358
+Reviewed-Content-Hash: src/infection/infection_tracker.gd 8cfcecad940b5f58180de0103ce1d2d9be8ddb3e
+Reviewed-Content-Hash: src/infection/infection_treatment.gd 8c76181aef7df1b5c588b53b56e12fb6300e8bd5
+Reviewed-Content-Hash: src/infection/placeholder_civilian.gd d4b4a085e87c7ce45b39fd32336c54bcc94113a1
+Reviewed-Content-Hash: src/infection/survivor.gd e481cd08a38ce41a11192cc3e2312336a505f955
+Reviewed-Content-Hash: src/squads/soldier.gd c67306c05e79e2e265f0cca28ed4a920136096eb
+Reviewed-Content-Hash: src/squads/soldier_stats.gd cf0aa8fdc4ccb210e912d8fd8de3f276714c7408
+Reviewed-Content-Hash: src/squads/game_data.gd 6e251ffd0b364df612c1e913d810ab90d15d5431
+Reviewed-Content-Hash: src/squads/greybox_block.gd 66ebfc243c2dfa0f5590615d17023c5307ceca33
+Reviewed-Content-Hash: src/horde/horde_manager.gd 086dc37aa1dd38a0f00e1d5d224f605d3287c05b
+Reviewed-Content-Hash: assets/data/infection.json 0135b5e8a7cb338a5b5e8bff8986de34832e5b49
+Reviewed-Content-Hash: assets/data/gear.json d3531d60a3bfb015268c5d293fed9b7203b45afd

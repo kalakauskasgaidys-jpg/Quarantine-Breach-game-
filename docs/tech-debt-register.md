@@ -1,7 +1,7 @@
 ## Technical Debt Register
 
-Last updated: 2026-10-25
-Total items: 6 | Estimated total effort: 6 S
+Last updated: 2026-10-27
+Total items: 12 | Estimated total effort: 11 S + 1 M
 
 | ID | Category | Description | Files | Effort | Impact | Priority | Status | Added | Sprint |
 |----|----------|-------------|-------|--------|--------|----------|--------|-------|--------|
@@ -11,3 +11,9 @@ Total items: 6 | Estimated total effort: 6 S
 | TD-004 | Code Quality | A non-mesh node in the `obstacles` group crashes the fog setup (`as MeshInstance3D` not null-checked) — from production/epics/quarantine-breach/story-001-squad-control-and-loadouts.md | src/squads/greybox_block.gd | S | Low | 1.0 | Open | 2026-10-25 | Backlog |
 | TD-005 | Code Quality | Shot tracer calls `look_at_from_position` without guarding equal or vertical points, which logs an error — from production/epics/quarantine-breach/story-001-squad-control-and-loadouts.md | src/squads/greybox_block.gd | S | Low | 1.0 | Open | 2026-10-25 | Backlog |
 | TD-006 | Code Quality | Squad number keys use `keycode`, so they depend on keyboard layout (use `physical_keycode`) — from production/epics/quarantine-breach/story-001-squad-control-and-loadouts.md | src/squads/selection_controller.gd | S | Low | 1.0 | Open | 2026-10-25 | Backlog |
+| TD-007 | Performance | Zombie movement code (GDScript) is at its 2 ms frame share at 300 moving zombies and about 5 ms at 1000; frame rate still averages over 100 fps on an integrated-graphics laptop. Options if it binds: lower-rate decisions in batches, or move the movement loop out of GDScript — from production/epics/quarantine-breach/story-002-noise-driven-horde-and-time-of-day.md | src/horde/horde_manager.gd | M | Med | — | Open | 2026-10-27 | Backlog |
+| TD-008 | Code Quality | Alerted zombies still move in streams along the flow field's 8 directions, so crowds look lined up — from production/epics/quarantine-breach/story-002-noise-driven-horde-and-time-of-day.md | src/horde/flow_field.gd, src/horde/horde_manager.gd | S | Low | — | Open | 2026-10-27 | Backlog |
+| TD-009 | Code Quality | Dark-coloured soldier classes are hard to see at night, even after brightening the night light — from production/epics/quarantine-breach/story-002-noise-driven-horde-and-time-of-day.md | assets/data/time_of_day.json, assets/data/soldier_classes.json | S | Low | — | Open | 2026-10-27 | Backlog |
+| TD-010 | Code Quality | The final horde code was not re-reviewed by the engine specialist after the shamble removal and two follow-up fixes — from production/epics/quarantine-breach/story-002-noise-driven-horde-and-time-of-day.md | src/horde/horde_manager.gd, src/squads/game_data.gd | S | Low | — | Open | 2026-10-27 | Backlog |
+| TD-011 | Code Quality | Light-grey placeholder civilians look similar to the white medic body (medic has a squad ring and number, civilians have neither); a different hue would separate them better — from production/epics/quarantine-breach/story-003-infection-turning.md | assets/data/mission.json, assets/data/soldier_classes.json | S | Low | — | Open | 2026-10-27 | Backlog |
+| TD-012 | Code Quality | Placeholder civilian body height offset (`body.position.y = 0.8`) is written in code, not data; presentation value only — from production/epics/quarantine-breach/story-003-infection-turning.md | src/infection/placeholder_civilian.gd | S | Low | — | Resolved 2026-10-27 — the placeholder civilian was replaced by `src/mission/civilian.gd` in story 004 | 2026-10-27 | Backlog |

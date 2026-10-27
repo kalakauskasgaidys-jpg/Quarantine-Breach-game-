@@ -14,10 +14,12 @@ const NOISE_PATH := "res://assets/data/noise.json"
 const HORDE_PATH := "res://assets/data/horde.json"
 const DIFFICULTY_PATH := "res://assets/data/difficulty.json"
 const TIME_OF_DAY_PATH := "res://assets/data/time_of_day.json"
+const INFECTION_PATH := "res://assets/data/infection.json"
+const MISSION_PATH := "res://assets/data/mission.json"
 
 ## Value shapes for the story 002 data files (see [method _check_schema]).
 ## INTEGER rules are written [Kind.INTEGER, minimum]: a whole number >= minimum.
-enum Kind { NUMBER, POSITIVE, NON_NEGATIVE, STRING, COLOR, INTEGER }
+enum Kind { NUMBER, POSITIVE, NON_NEGATIVE, STRING, COLOR, INTEGER, ARRAY }
 
 const NOISE_SCHEMA := {
 	"fade_time": Kind.POSITIVE,
@@ -80,6 +82,63 @@ const HORDE_SCHEMA := {
 		"color_high": Kind.COLOR,
 	},
 }
+const INFECTION_SCHEMA := {
+	"infection": {
+		"delay_seconds": Kind.POSITIVE,
+		"bite_chance": Kind.NON_NEGATIVE,
+	},
+	"countdown": {
+		"color_start": Kind.COLOR,
+		"color_urgent": Kind.COLOR,
+		"height": Kind.NON_NEGATIVE,
+		"font_size": [Kind.INTEGER, 1],
+	},
+	"treatment": {
+		"medic_class": Kind.STRING,
+		"medic_treat_time": Kind.POSITIVE,
+		"medic_cooldown": Kind.NON_NEGATIVE,
+		"medic_range": Kind.POSITIVE,
+		"antidote_range": Kind.POSITIVE,
+	},
+	"debug": {
+		"start_infected_count": [Kind.INTEGER, 0],
+	},
+}
+const MISSION_SCHEMA := {
+	"mission": {
+		"time_limit_seconds": [Kind.INTEGER, 1],
+	},
+	"evac": {
+		"position": Kind.ARRAY,
+		"radius": Kind.POSITIVE,
+		"color": Kind.COLOR,
+	},
+	"carry": {
+		"slowdown": Kind.NON_NEGATIVE,
+		"min_speed_multiplier": Kind.POSITIVE,
+	},
+	"loot": {
+		"loot_time": Kind.NON_NEGATIVE,
+		"loot_range": Kind.POSITIVE,
+	},
+	"caches": Kind.ARRAY,
+	"civilians": {
+		"count": [Kind.INTEGER, 0],
+		"hit_points": Kind.POSITIVE,
+		"walk_speed": Kind.POSITIVE,
+		"follow_distance": Kind.NON_NEGATIVE,
+		"repath_interval": Kind.POSITIVE,
+		"color": Kind.COLOR,
+		"unassigned_color": Kind.COLOR,
+		"spots": Kind.ARRAY,
+		"squad_assignment": Kind.ARRAY,
+	},
+}
+const CACHE_SCHEMA := {
+	"position": Kind.ARRAY,
+	"weight": Kind.NON_NEGATIVE,
+	"value": Kind.NON_NEGATIVE,
+}
 const PRESET_SCHEMA := {
 	"display_name": Kind.STRING,
 	"horde_size": [Kind.INTEGER, 0],
@@ -99,7 +158,7 @@ const TIME_MODE_SCHEMA := {
 const REQUIRED_TIME_MODES: Array[String] = ["day", "night"]
 
 const CLASS_KEYS: Array[String] = [
-	"display_name", "max_health", "move_speed", "sight_range",
+	"display_name", "max_health", "carry_capacity", "move_speed", "sight_range",
 	"damage_multiplier", "color", "default_gear",
 ]
 const WEAPON_KEYS: Array[String] = ["damage", "range", "fire_interval", "noise"]
@@ -125,6 +184,10 @@ var horde: Dictionary = {}
 var difficulty: Dictionary = {}
 ## Time-of-day modes (time_of_day.json): "default_mode" and "modes".
 var time_of_day: Dictionary = {}
+## Infection and treatment tuning (infection.json).
+var infection: Dictionary = {}
+## Extraction mission tuning (mission.json): evac, carry, loot, caches, civilians.
+var mission: Dictionary = {}
 
 
 ## Reads and validates all data files. Returns null (after push_error) if any is invalid.
@@ -136,8 +199,11 @@ static func load_all() -> GameData:
 	var horde_doc: Dictionary = _read_json(HORDE_PATH)
 	var difficulty_doc: Dictionary = _read_json(DIFFICULTY_PATH)
 	var time_doc: Dictionary = _read_json(TIME_OF_DAY_PATH)
+	var infection_doc: Dictionary = _read_json(INFECTION_PATH)
+	var mission_doc: Dictionary = _read_json(MISSION_PATH)
 	if class_doc.is_empty() or gear_doc.is_empty() or config_doc.is_empty() \
-			or noise_doc.is_empty() or horde_doc.is_empty() or difficulty_doc.is_empty() or time_doc.is_empty():
+			or noise_doc.is_empty() or horde_doc.is_empty() or difficulty_doc.is_empty() or time_doc.is_empty() \
+			or infection_doc.is_empty():
 		return null
 	var data := GameData.new()
 	data.classes = class_doc.get("classes", {})
@@ -149,6 +215,8 @@ static func load_all() -> GameData:
 	data.horde = horde_doc
 	data.difficulty = difficulty_doc
 	data.time_of_day = time_doc
+	data.infection = infection_doc
+	data.mission = mission_doc
 	if not data._validate():
 		return null
 	return data
@@ -224,6 +292,11 @@ static func _check_value(value: Variant, kind: int, where: String) -> bool:
 				return true
 			push_error("GameData: %s must be a string" % where)
 			return false
+		Kind.ARRAY:
+			if value is Array:
+				return true
+			push_error("GameData: %s must be an array" % where)
+			return false
 		Kind.COLOR:
 			var valid: bool = value is Array and (value.size() == 3 or value.size() == 4)
 			if valid:
@@ -283,8 +356,67 @@ func _check_catalog(doc: Dictionary, default_key: String, entries_key: String, s
 	return ok
 
 
+## Validates infection.json (story 003), including values that depend on other files.
+func _validate_infection_file() -> bool:
+	var ok := _check_schema(infection, INFECTION_SCHEMA, INFECTION_PATH)
+	if not ok:
+		return false
+	if float(infection["infection"]["bite_chance"]) > 1.0:
+		push_error("GameData: %s infection.bite_chance must be between 0 and 1" % INFECTION_PATH)
+		ok = false
+	if not classes.has(infection["treatment"]["medic_class"]):
+		push_error("GameData: %s treatment.medic_class '%s' is not a class in %s" % [INFECTION_PATH, infection["treatment"]["medic_class"], CLASSES_PATH])
+		ok = false
+	return ok
+
+
+## True if [param value] is an [x, z] pair of numbers.
+static func _check_point(value: Variant, where: String) -> bool:
+	var valid: bool = value is Array and value.size() == 2 and typeof(value[0]) == TYPE_FLOAT and typeof(value[1]) == TYPE_FLOAT
+	if not valid:
+		push_error("GameData: %s must be [x, z] numbers" % where)
+	return valid
+
+
+## Validates mission.json (story 004): shapes, point lists and cross-key limits.
+func _validate_mission_file() -> bool:
+	if not _check_schema(mission, MISSION_SCHEMA, MISSION_PATH):
+		return false
+	var ok := _check_point(mission["evac"]["position"], "%s evac.position" % MISSION_PATH)
+	if float(mission["carry"]["min_speed_multiplier"]) > 1.0:
+		push_error("GameData: %s carry.min_speed_multiplier must be at most 1" % MISSION_PATH)
+		ok = false
+	var caches: Array = mission["caches"]
+	for i in caches.size():
+		if not caches[i] is Dictionary:
+			push_error("GameData: %s caches[%d] must be an object" % [MISSION_PATH, i])
+			ok = false
+			continue
+		var where := "%s caches[%d]" % [MISSION_PATH, i]
+		ok = _check_schema(caches[i], CACHE_SCHEMA, where) and ok
+		if caches[i].has("position"):
+			ok = _check_point(caches[i]["position"], where + ".position") and ok
+	var civilian: Dictionary = mission["civilians"]
+	var spots: Array = civilian["spots"]
+	for i in spots.size():
+		ok = _check_point(spots[i], "%s civilians.spots[%d]" % [MISSION_PATH, i]) and ok
+	if civilian["count"] > spots.size():
+		push_error("GameData: %s civilians.count (%d) exceeds the %d spots" % [MISSION_PATH, civilian["count"], spots.size()])
+		ok = false
+	var assignment: Array = civilian["squad_assignment"]
+	if assignment.is_empty():
+		push_error("GameData: %s civilians.squad_assignment must not be empty" % MISSION_PATH)
+		ok = false
+	for i in assignment.size():
+		ok = _check_integer(assignment[i], 1, "%s civilians.squad_assignment[%d]" % [MISSION_PATH, i]) and ok
+	return ok
+
+
 func _validate() -> bool:
 	var ok := _validate_horde_files()
+	ok = _validate_mission_file() and ok
+	if not classes.is_empty():
+		ok = _validate_infection_file() and ok
 	if slots.is_empty() or classes.is_empty() or gear_items.is_empty():
 		push_error("GameData: slots, classes and items must not be empty")
 		return false
@@ -296,6 +428,8 @@ func _validate() -> bool:
 		var item: Dictionary = gear_items[id]
 		if not item.has("display_name") or not slots.has(item.get("slot", "")):
 			push_error("GameData: gear '%s' needs display_name and a known slot" % id)
+			ok = false
+		if item.has("antidote_uses") and not _check_integer(item["antidote_uses"], 1, "%s item '%s'.antidote_uses" % [GEAR_PATH, id]):
 			ok = false
 		if item.has("damage"):
 			for key in WEAPON_KEYS:
@@ -312,6 +446,8 @@ func _validate() -> bool:
 		if not class_ok:
 			ok = false
 			continue
+		if not _check_value(cls["carry_capacity"], Kind.POSITIVE, "%s class '%s'.carry_capacity" % [CLASSES_PATH, id]):
+			ok = false
 		var defaults: Dictionary = cls["default_gear"]
 		for slot in slots:
 			var gear_id: String = defaults.get(slot, "")

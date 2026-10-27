@@ -6,18 +6,25 @@ extends Node3D
 
 ## Emitted when every deployed squad has been wiped (feeds the mission fail state in story 004).
 signal all_squads_wiped
+## Forwarded from the [Mission] when the extraction mission ends (story 004); the campaign reads it.
+signal mission_finished(result: MissionResult)
 
-const HELP_TEXT := "LMB click / drag: select | 1-3: squad | RMB: move | WASD: pan | wheel: zoom | K: kill selected (debug)\nN: noise rings | H: horde heat map | T: day / night (debug)"
+const HELP_TEXT := ("LMB click / drag: select | 1-3: squad | RMB: move | WASD: pan | wheel: zoom | K: kill selected (debug)\n"
+		+ "N: noise rings | H: horde heat map | T: day / night (debug)\n"
+		+ "E: use antidote / medic treats nearest infected | I: infect selected soldier (debug)\n"
+		+ "RMB cache: loot | RMB civilian: assign to selected squad (lowest number if several) | X / Extract button: extract all in EVAC")
 ## Seconds between refreshes of the debug readout.
 const READOUT_INTERVAL: float = 0.25
 ## Launch arguments (after "--") that override the data files for testing and
 ## benchmarking: --difficulty=hard --time-of-day=night --horde-size=500
-## --roaming-count=0 --reveal-zombies
+## --roaming-count=0 --reveal-zombies --start-infected=2 --mission-time=SECONDS
 const ARG_DIFFICULTY := "difficulty"
 const ARG_TIME_OF_DAY := "time-of-day"
 const ARG_HORDE_SIZE := "horde-size"
 const ARG_ROAMING_COUNT := "roaming-count"
 const ARG_REVEAL := "reveal-zombies"
+const ARG_START_INFECTED := "start-infected"
+const ARG_MISSION_TIME := "mission-time"
 
 @onready var _nav_region: NavigationRegion3D = $NavigationRegion3D
 @onready var _ground: MeshInstance3D = $NavigationRegion3D/Ground
@@ -41,6 +48,12 @@ var _rings: NoiseRingsOverlay
 var _heat_map: HordeHeatMap
 var _readout: Label
 var _readout_timer: float = 0.0
+var _tracker: InfectionTracker
+var _mission: Mission
+var _infection_controls: InfectionControls
+var _mission_controls: MissionControls
+var _start_infected: int = 0
+var _treat_feedback: String = ""
 ## Roaming zombies before the time-of-day multiplier.
 var _base_roaming: int = 0
 
@@ -80,6 +93,8 @@ func _ready() -> void:
 		(node as TargetDummy).setup(config["target_dummy_health"])
 
 	_setup_horde(bounds)
+	_setup_infection()
+	_setup_mission()
 
 	# The navigation map only knows the baked mesh after the next physics frames.
 	await get_tree().physics_frame
@@ -121,7 +136,11 @@ func _setup_horde(bounds: Rect2) -> void:
 	add_child(_time_of_day)
 	var modes: Dictionary = _data.time_of_day["modes"]
 	_time_of_day.setup(modes, ($WorldEnvironment as WorldEnvironment).environment, $Sun as DirectionalLight3D)
-	var capacity := horde_size + ceili(_base_roaming * _time_of_day.max_roaming_multiplier())
+	# Room for every soldier and civilian to turn and join the horde (story 003).
+	var survivor_count := int(_data.mission["civilians"]["count"])
+	for squad_classes: Array in _data.config["default_squads"]:
+		survivor_count += squad_classes.size()
+	var capacity := horde_size + ceili(_base_roaming * _time_of_day.max_roaming_multiplier()) + survivor_count
 
 	_noise = NoiseSystem.new(_data.noise)
 	var safe_points: Array[Vector3] = []
@@ -148,11 +167,73 @@ func _setup_horde(bounds: Rect2) -> void:
 	controls.time_of_day_toggled.connect(_time_of_day.toggle)
 
 	_readout = Label.new()
-	_readout.position = Vector2(8, 56)
+	_readout.position = Vector2(8, 112)
 	$Hud.add_child(_readout)
 
 	_time_of_day.time_of_day_changed.connect(_on_time_of_day_changed)
 	_time_of_day.set_mode(_choose(args.get(ARG_TIME_OF_DAY, ""), modes, _data.time_of_day["default_mode"], ARG_TIME_OF_DAY))
+
+
+## Creates the infection rules and the E / I keys (story 003).
+func _setup_infection() -> void:
+	_tracker = InfectionTracker.new()
+	_tracker.name = "InfectionTracker"
+	add_child(_tracker)
+	_tracker.setup(_data.infection, _horde)
+	_tracker.treatment.feedback.connect(func(text: String) -> void: _treat_feedback = text)
+
+	_infection_controls = InfectionControls.new()
+	add_child(_infection_controls)
+	_infection_controls.setup(_controller)
+	_infection_controls.treat_requested.connect(_on_treat_requested)
+	_infection_controls.infect_requested.connect(_on_infect_requested)
+
+
+## Creates the extraction mission: evac zone, caches, civilians, HUD and controls (story 004).
+func _setup_mission() -> void:
+	var args := _launch_args()
+	var time_limit := _int_arg(args, ARG_MISSION_TIME, int(_data.mission["mission"]["time_limit_seconds"]))
+	_mission = Mission.new()
+	_mission.name = "Mission"
+	add_child(_mission)
+	_mission.setup(_data.mission, _data.config["squad_colors"], time_limit, _fog, _tracker)
+	_mission.mission_finished.connect(_on_mission_finished)
+	_horde.set_extra_survivors(_mission.civilians)
+
+	_start_infected = _int_arg(args, ARG_START_INFECTED, int(_data.infection["debug"]["start_infected_count"]))
+	for i in mini(_start_infected, _mission.civilians.size()):
+		_mission.civilians[i].infectable.infect()
+
+	var hud := MissionHud.new()
+	$Hud.add_child(hud)
+	hud.setup(_mission)
+	_mission_controls = MissionControls.new()
+	add_child(_mission_controls)
+	_mission_controls.setup(_mission, _controller, _camera_rig.camera, _data.config["pick_radius_px"])
+
+
+## Ends the simulation of orders when the mission is over; the results panel shows the outcome.
+func _on_mission_finished(result: MissionResult) -> void:
+	for node: Node in [_soldiers_root, _mission, _horde, _tracker, _controller, _infection_controls, _mission_controls]:
+		node.process_mode = Node.PROCESS_MODE_DISABLED
+	_status.text = "Mission complete" if result.success else "Mission failed"
+	mission_finished.emit(result)
+
+
+## Every soldier of the selected squads tries to treat the nearest infected unit.
+func _on_treat_requested(squads: Array[Squad]) -> void:
+	for squad in squads:
+		for soldier in squad.soldiers.duplicate():
+			_tracker.treatment.try_treat(soldier)
+
+
+## Debug: infects the first healthy soldier of each selected squad.
+func _on_infect_requested(squads: Array[Squad]) -> void:
+	for squad in squads:
+		for soldier in squad.soldiers:
+			if soldier.infectable != null and not soldier.is_infected():
+				soldier.infectable.infect()
+				break
 
 
 ## Launch arguments after "--" as { name: value }; a bare flag has the value "true".
@@ -201,11 +282,13 @@ func _on_time_of_day_changed(_mode_id: String) -> void:
 
 
 func _update_readout() -> void:
-	_readout.text = "%s | zombies %d (roaming %d, alerted %d, chasing %d, searching %d) | noises %d | horde step %.2f ms" % [
+	_readout.text = "%s | zombies %d (roaming %d, alerted %d, chasing %d, searching %d) | noises %d | horde step %.2f ms
+infected %d | lost: soldiers %d, civilians %d | turned %d | %s" % [
 			_time_of_day.display_name, _horde.count, _horde.roamer_count(),
 			_horde.count_in_state(HordeManager.State.ALERTED), _horde.count_in_state(HordeManager.State.CHASE),
 			_horde.count_in_state(HordeManager.State.SEARCH),
-			_noise.events.size(), _horde.step_time_usec / 1000.0]
+			_noise.events.size(), _horde.step_time_usec / 1000.0,
+			_tracker.infected_count(), _tracker.soldiers_lost, _tracker.civilians_lost, _tracker.turned_count, _treat_feedback]
 
 
 func _on_deploy_requested(loadouts: Array) -> void:
@@ -227,6 +310,7 @@ func _on_deploy_requested(loadouts: Array) -> void:
 			soldier.setup(SoldierStats.build(loadout, _data), squad.number, class_color, ring_color,
 					_fog, config["retarget_interval"])
 			soldier.horde = _horde
+			_tracker.register(soldier)
 			soldier.sight_multiplier = _time_of_day.sight_range_multiplier
 			soldier.position = spawn + Squad.formation_offset(soldier_index, squad_loadouts.size(), spacing)
 			_soldiers_root.add_child(soldier)
@@ -234,8 +318,12 @@ func _on_deploy_requested(loadouts: Array) -> void:
 			squad.add_soldier(soldier)
 		squad.squad_wiped.connect(_on_squad_wiped)
 		_squads.append(squad)
+	var living := _living_soldiers()
+	for i in mini(_start_infected, living.size()):
+		living[i].infectable.infect()
 	_horde.set_squads(_squads)
 	_controller.set_squads(_squads)
+	_mission.start(_squads)
 	_refresh_fog()
 
 
@@ -254,6 +342,10 @@ func _on_fog_updated() -> void:
 	for node in get_tree().get_nodes_in_group(&"targets"):
 		var dummy := node as TargetDummy
 		dummy.visible = _fog.is_visible_at(dummy.global_position)
+	# Civilians (and their infection countdowns) show only while a squad sees them.
+	_mission.refresh_visibility()
+	for civilian in _mission.civilians:
+		civilian.visible = _fog.is_visible_at(civilian.global_position)
 	for i in _buildings.size():
 		_buildings[i].visible = _fog.is_rect_explored(_building_rects[i])
 

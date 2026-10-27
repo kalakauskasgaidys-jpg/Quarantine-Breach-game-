@@ -52,6 +52,8 @@ var _fog: FogOfWar
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _bounds: Rect2
 var _squads: Array[Squad] = []
+## Non-squad survivors (civilians) the horde also sees, chases and bites.
+var _extra_survivors: Array[Survivor] = []
 var _spawn_safe_points: Array[Vector2] = []
 var _capacity: int = 0
 var _tick: int = 0
@@ -70,7 +72,7 @@ var _roamers: PackedByteArray = PackedByteArray()
 var _roamer_count: int = 0
 
 # Soldiers as seen this step.
-var _soldiers: Array[Soldier] = []
+var _soldiers: Array[Survivor] = []
 var _soldier_pos: PackedVector2Array = PackedVector2Array()
 var _soldier_ids: PackedInt64Array = PackedInt64Array()
 var _soldier_index: Dictionary = {}
@@ -212,9 +214,16 @@ func setup(config: Dictionary, noise: NoiseSystem, fog: FogOfWar, bounds: Rect2,
 	_noise.noise_emitted.connect(_on_noise_emitted)
 
 
-## Sets the squads whose soldiers the horde sees, chases and bites.
+## Sets the squads whose soldiers the horde sees, chases and bites. Infected
+## survivors are left alone (story 003): they are skipped when the list is built.
 func set_squads(squads: Array[Squad]) -> void:
 	_squads = squads
+
+
+## Sets survivors outside the squads (civilians) that the horde also targets. The
+## array is read by reference; freed or dead entries are skipped.
+func set_extra_survivors(survivors: Array[Survivor]) -> void:
+	_extra_survivors = survivors
 
 
 ## Scales zombie sight range (time of day: below 1.0 at night).
@@ -235,6 +244,20 @@ func spawn_idle(amount: int) -> int:
 		if _spawn_one(false):
 			placed += 1
 	return placed
+
+
+## Adds a zombie at [param at] for a turned survivor. It looks for a survivor in
+## sight at once and chases it, else starts ALERTED (it settles into IDLE on the next
+## step). False if the horde is full. Only the horde's own arrays are touched.
+func add_zombie(at: Vector3) -> bool:
+	if count >= _capacity:
+		return false
+	var index := count
+	_place(Vector2(at.x, at.z), false)
+	_refresh_soldiers()
+	var state := _perceive(index, positions[index], State.IDLE)
+	states[index] = state if state == State.CHASE else State.ALERTED
+	return true
 
 
 ## Makes the number of wandering zombies equal [param target]: spawns new ones out
@@ -352,6 +375,12 @@ func _spawn_one(roamer: bool) -> bool:
 	var at := _random_spawn_position()
 	if at == Vector2.INF:
 		return false
+	_place(at, roamer)
+	return true
+
+
+## Writes a fresh zombie into the next free slot (the caller checked capacity).
+func _place(at: Vector2, roamer: bool) -> void:
 	positions[count] = at
 	velocities[count] = Vector2.ZERO
 	states[count] = State.ROAM if roamer else State.IDLE
@@ -366,7 +395,6 @@ func _spawn_one(roamer: bool) -> bool:
 	if roamer:
 		_roamer_count += 1
 	count += 1
-	return true
 
 
 func _random_spawn_position() -> Vector2:
@@ -490,11 +518,17 @@ func _refresh_soldiers() -> void:
 	_soldier_index.clear()
 	for squad in _squads:
 		for soldier in squad.soldiers:
-			if soldier.health > 0.0:
+			if soldier.health > 0.0 and not soldier.is_infected():
 				_soldier_index[soldier.get_instance_id()] = _soldiers.size()
 				_soldiers.append(soldier)
 				_soldier_ids.append(soldier.get_instance_id())
 				_soldier_pos.append(Vector2(soldier.global_position.x, soldier.global_position.z))
+	for survivor in _extra_survivors:
+		if is_instance_valid(survivor) and survivor.health > 0.0 and not survivor.is_infected():
+			_soldier_index[survivor.get_instance_id()] = _soldiers.size()
+			_soldiers.append(survivor)
+			_soldier_ids.append(survivor.get_instance_id())
+			_soldier_pos.append(Vector2(survivor.global_position.x, survivor.global_position.z))
 
 
 ## Buckets zombies by separation cell as linked lists (head per cell, next per zombie).
@@ -532,7 +566,7 @@ func _simulate(delta: float) -> void:
 					var wind_up := _timers[i] - delta
 					if wind_up <= 0.0:
 						wind_up = _attack_interval
-						_soldiers[target].take_damage(_attack_damage)
+						_soldiers[target].receive_bite(_attack_damage)
 					_timers[i] = wind_up
 				else:
 					v = to_soldier * (_chase_speed / sqrt(distance_sq))

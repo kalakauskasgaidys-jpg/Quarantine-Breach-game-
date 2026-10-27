@@ -1,5 +1,5 @@
 class_name Soldier
-extends Node3D
+extends Survivor
 ## One soldier: placeholder body, squad number, selection ring, navigation
 ## movement and auto-fire at targets in range (design/game-brief.md MVP feature 2).
 ## Holds no input code; orders arrive through [method order_move].
@@ -18,7 +18,8 @@ const MAX_DAMAGE_REDUCTION: float = 0.95
 
 var stats: SoldierStats
 var squad_number: int = 0
-var health: float = 0.0
+## Antidote uses left (story 003); starts from the equipped gear.
+var antidote_uses: int = 0
 ## Shared fog/line-of-sight grid used to check shots.
 var fog: FogOfWar
 ## Seconds between target scans while nothing is in range.
@@ -28,6 +29,17 @@ var horde: HordeManager
 ## Multiplies sight range; time of day sets it below 1.0 at night.
 var sight_multiplier: float = 1.0
 
+## Loot carried (story 004): weight slows the soldier, value counts when extracted.
+var carried_weight: float = 0.0
+var carried_value: float = 0.0
+## Slow-down at a load equal to the carry capacity, and the lowest speed fraction
+## (mission.json "carry"); the mission sets them at deploy.
+var carry_slowdown: float = 0.0
+var carry_min_multiplier: float = 1.0
+## Incremented by every move order; lets the mission notice a loot order was replaced.
+var order_serial: int = 0
+
+var _load_label: Label3D
 var _body_color: Color
 var _ring_color: Color
 var _agent: NavigationAgent3D
@@ -47,6 +59,7 @@ func setup(p_stats: SoldierStats, p_squad_number: int, p_body_color: Color,
 	fog = p_fog
 	retarget_interval = p_retarget_interval
 	health = stats.max_health
+	antidote_uses = stats.antidote_uses
 
 
 func _ready() -> void:
@@ -93,6 +106,16 @@ func _ready() -> void:
 	label.position.y = 2.1
 	add_child(label)
 
+	_load_label = Label3D.new()
+	_load_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_load_label.no_depth_test = true
+	_load_label.pixel_size = 0.01
+	_load_label.font_size = 40
+	_load_label.outline_size = 10
+	_load_label.position.y = 2.6
+	_load_label.visible = false
+	add_child(_load_label)
+
 	_agent = NavigationAgent3D.new()
 	_agent.path_desired_distance = 0.5
 	_agent.target_desired_distance = 0.5
@@ -109,6 +132,22 @@ func set_selected(selected: bool) -> void:
 func order_move(target: Vector3) -> void:
 	_agent.target_position = NavigationServer3D.map_get_closest_point(_agent.get_navigation_map(), target)
 	_moving = true
+	order_serial += 1
+
+
+## Adds looted goods; the load label shows the carried weight.
+func add_loot(weight: float, value: float) -> void:
+	carried_weight += weight
+	carried_value += value
+	_load_label.visible = true
+	_load_label.text = "%.0f kg" % carried_weight
+	_load_label.modulate = Color.WHITE.lerp(Color.RED, clampf(carried_weight / stats.carry_capacity, 0.0, 1.0))
+
+
+## Walking speed in metres per second after the load slow-down.
+func current_speed() -> float:
+	var multiplier := maxf(carry_min_multiplier, 1.0 - carry_slowdown * carried_weight / stats.carry_capacity)
+	return stats.move_speed * multiplier
 
 
 ## True while the soldier is walking an order (moving soldiers make noise).
@@ -133,6 +172,16 @@ func take_damage(amount: float) -> void:
 		queue_free()
 
 
+## Leaves the squad because the soldier turned into a zombie (story 003).
+func remove_from_play() -> void:
+	if health <= 0.0:
+		return
+	health = 0.0
+	health_changed.emit(health, stats.max_health)
+	died.emit(self)
+	queue_free()
+
+
 func _physics_process(delta: float) -> void:
 	if _moving:
 		_step_along_path(delta)
@@ -147,7 +196,7 @@ func _step_along_path(delta: float) -> void:
 		return
 	var to_next := _agent.get_next_path_position() - global_position
 	to_next.y = 0.0
-	var step := stats.move_speed * delta
+	var step := current_speed() * delta
 	if to_next.length() > 0.001:
 		rotation.y = atan2(-to_next.x, -to_next.z)
 	global_position += to_next.limit_length(step)

@@ -10,6 +10,10 @@ extends Control
 ## Emitted whenever the set of selected squads changes.
 signal selection_changed(selected: Array[Squad])
 
+## Optional hook for right-clicks: called with the screen position; returning true
+## means the click was handled (loot, assign) and no move order is given.
+var order_override: Callable = Callable()
+
 var _camera: Camera3D
 var _squads: Array[Squad] = []
 var _selected: Array[Squad] = []
@@ -112,6 +116,8 @@ func _select(squads: Array[Squad], additive: bool) -> void:
 
 
 func _order_selected(screen_position: Vector2) -> void:
+	if order_override.is_valid() and order_override.call(screen_position, _selected):
+		return
 	var hit: Variant = Plane(Vector3.UP, 0.0).intersects_ray(
 			_camera.project_ray_origin(screen_position), _camera.project_ray_normal(screen_position))
 	if hit == null:

@@ -14,7 +14,8 @@
     "damage_reduction": "Optional: fraction of incoming damage ignored, 0..1; stacks by addition",
     "damage_multiplier": "Optional: multiplies outgoing weapon damage",
     "range_multiplier": "Optional: multiplies weapon range",
-    "noise_multiplier": "Optional: multiplies shot noise; 1.0 = unchanged"
+    "noise_multiplier": "Optional: multiplies shot noise; 1.0 = unchanged",
+    "antidote_uses": "Optional: whole number >= 1; how many infections the carrier can cure (story 003, E key); range is in infection.json"
   },
   "slots": ["primary_weapon", "sidearm", "suppressor", "armor", "grenades", "medkit"],
   "items": {
@@ -63,6 +64,10 @@
     "field_medkit": {
       "slot": "medkit", "display_name": "Field medkit",
       "move_speed_multiplier": 0.98
+    },
+    "antidote": {
+      "slot": "medkit", "display_name": "Antidote",
+      "antidote_uses": 2
     }
   }
 }

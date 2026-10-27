@@ -1,12 +1,12 @@
 # Story 004: Extraction mission
 
 > **Epic**: quarantine-breach
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -61,11 +61,26 @@ N/A (minimal — no control manifest)
 
 ## Files
 
-- `src/mission/` (mission state, objectives, evac, results)
+- `src/mission/civilian.gd`
+- `src/mission/evac_zone.gd`
+- `src/mission/mission.gd`
+- `src/mission/mission_controls.gd`
+- `src/mission/mission_hud.gd`
+- `src/mission/mission_result.gd`
+- `src/mission/supply_cache.gd`
+- `src/infection/survivor.gd`
+- `src/infection/infection_tracker.gd`
+- `src/infection/infection_treatment.gd`
+- `src/horde/horde_manager.gd`
+- `src/squads/greybox_block.gd`
+- `src/squads/soldier.gd`
+- `src/squads/soldier_stats.gd`
+- `src/squads/squad.gd`
+- `src/squads/selection_controller.gd`
+- `src/squads/game_data.gd`
 - `assets/data/mission.json`
-- `tests/integration/mission/extraction_mission_test.gd`
-
----
+- `assets/data/infection.json`
+- `assets/data/soldier_classes.json`
 
 ## QA Test Cases
 

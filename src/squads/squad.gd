@@ -27,6 +27,13 @@ func add_soldier(soldier: Soldier) -> void:
 	soldier.died.connect(_on_soldier_died)
 
 
+## Removes [param soldier] because it was extracted, not killed: the squad is not
+## reported as wiped (story 004).
+func extract_soldier(soldier: Soldier) -> void:
+	soldiers.erase(soldier)
+	soldier.died.disconnect(_on_soldier_died)
+
+
 func is_wiped() -> bool:
 	return soldiers.is_empty()
 

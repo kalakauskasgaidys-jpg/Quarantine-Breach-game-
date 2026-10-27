@@ -1,12 +1,12 @@
 # Story 003: Infection turning
 
 > **Epic**: quarantine-breach
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -59,11 +59,20 @@ N/A (minimal — no control manifest)
 
 ## Files
 
-- `src/infection/` (infection state, turning, treatment)
+- `src/infection/infectable.gd`
+- `src/infection/infection_controls.gd`
+- `src/infection/infection_countdown.gd`
+- `src/infection/infection_tracker.gd`
+- `src/infection/infection_treatment.gd`
+- `src/infection/placeholder_civilian.gd`
+- `src/infection/survivor.gd`
+- `src/squads/soldier.gd`
+- `src/squads/soldier_stats.gd`
+- `src/squads/game_data.gd`
+- `src/squads/greybox_block.gd`
+- `src/horde/horde_manager.gd`
 - `assets/data/infection.json`
-- `tests/unit/infection/infection_turning_test.gd`
-
----
+- `assets/data/gear.json`
 
 ## QA Test Cases
 
@@ -87,3 +96,12 @@ N/A (minimal — no control manifest)
 
 - Depends on: `production/epics/quarantine-breach/story-002-noise-driven-horde-and-time-of-day.md`
 - Unlocks: `production/epics/quarantine-breach/story-004-extraction-mission.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 8/8 passing (none deferred)
+**Deviations**: Advisory: light-grey placeholder civilians resemble the white medic body (TD-011); one presentation value hardcoded in `placeholder_civilian.gd` (TD-012). The placeholder civilians are deliberately minimal and are replaced by story 004. Out of scope: story 001/002 files edited for hooks (`soldier.gd`, `soldier_stats.gd`, `game_data.gd`, `greybox_block.gd`, `horde_manager.gd`, `gear.json`); Godot `.uid` files added. Design decisions made during the story: zombies ignore infected units, the countdown pauses during a medic treatment, medics may treat themselves, civilians are hidden by fog.
+**Test Evidence**: waived at qa.level minimal. Retained screenshots: `production/qa/evidence/story-003-infection-turning/`
+**Reviewed by**: self, no independent review
