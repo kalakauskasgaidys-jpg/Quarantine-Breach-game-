@@ -1,12 +1,12 @@
 # Story 002: Noise-driven horde and time of day
 
 > **Epic**: quarantine-breach
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: 2026-10-25
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -99,3 +99,12 @@ N/A (minimal — no control manifest)
 
 - Depends on: `production/epics/quarantine-breach/story-001-squad-control-and-loadouts.md`
 - Unlocks: `production/epics/quarantine-breach/story-003-infection-turning.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 9/9 passing (none deferred)
+**Deviations**: Advisory: zombie movement code is at/over its 2 ms frame share at 300+ moving zombies (TD-007); alerted zombies move in 8-direction streams (TD-008); dark soldier classes hard to see at night (TD-009); final horde code not re-reviewed by the engine specialist (TD-010). Out of scope: story 001 files (`game_data.gd`, `soldier.gd`, `greybox_block.gd`) edited as this story needed; Godot `.uid` companion files added. The shamble animation was built then removed for cost and moved to Later in the brief.
+**Test Evidence**: waived at qa.level minimal. Retained screenshots and the loud-vs-quiet playtest note: `production/qa/evidence/story-002-noise-driven-horde-and-time-of-day/`, `production/qa/playtests/story-002-loud-vs-quiet.md`
+**Reviewed by**: self, no independent review
