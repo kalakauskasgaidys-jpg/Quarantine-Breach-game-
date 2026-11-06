@@ -1,9 +1,9 @@
 class_name Civilian
 extends Survivor
-## A civilian to escort (design/game-brief.md MVP feature 5). Follows the nearest
-## soldier of the squad it is assigned to, loosely, along the navigation mesh. With
-## no squad (never assigned, or the squad was wiped) it stands still. Can be bitten
-## and infected like a soldier. Holds no input code.
+## A discovered civilian to escort (design/game-brief.md MVP feature 5). Follows the
+## nearest soldier of the squad the player assigned it to, loosely, along the navigation
+## mesh. With no squad (not assigned yet, or the squad was wiped) it stands still. Can
+## be bitten and infected like a soldier. Holds no input code.
 
 ## Squad being followed; null when unassigned. Squads are plain objects, so this
 ## reference never dangles; individual soldiers are checked with is_instance_valid.
@@ -71,6 +71,9 @@ func _ready() -> void:
 	_agent.path_desired_distance = 0.5
 	_agent.target_desired_distance = 0.5
 	add_child(_agent)
+	# Start on the navigation mesh, whatever the door point in the data.
+	var on_mesh := NavigationServer3D.map_get_closest_point(_agent.get_navigation_map(), global_position)
+	global_position = Vector3(on_mesh.x, global_position.y, on_mesh.z)
 
 
 ## Assigns the civilian to [param new_squad] (null = unassigned); [param color] is

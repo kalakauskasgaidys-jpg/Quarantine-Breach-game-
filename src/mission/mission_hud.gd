@@ -1,14 +1,14 @@
 class_name MissionHud
 extends Control
 ## On-screen pieces of the extraction mission (story 004): the evac countdown, the
-## carried-loot counter, the Extract button, a message line and the results panel.
-## Reads [Mission]; the Extract button calls [method Mission.request_extract].
+## carried-loot counter, the Call evac button, a message line and the results panel.
+## Reads [Mission]; the button calls [method Mission.call_evac].
 
 var _mission: Mission
 var _timer_label: Label
 var _loot_label: Label
 var _message_label: Label
-var _extract_button: Button
+var _evac_button: Button
 var _results_panel: PanelContainer
 var _results_label: Label
 
@@ -31,16 +31,16 @@ func setup(mission: Mission) -> void:
 	_loot_label = _make_label(Vector2(8.0, 200.0))
 	_message_label = _make_label(Vector2(8.0, 224.0))
 
-	_extract_button = Button.new()
-	_extract_button.text = "Extract (X)"
-	_extract_button.focus_mode = Control.FOCUS_NONE
-	_extract_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_extract_button.offset_left = -150.0
-	_extract_button.offset_right = -10.0
-	_extract_button.offset_top = 8.0
-	_extract_button.offset_bottom = 40.0
-	_extract_button.pressed.connect(mission.request_extract)
-	add_child(_extract_button)
+	_evac_button = Button.new()
+	_evac_button.text = "Call evac (X)"
+	_evac_button.focus_mode = Control.FOCUS_NONE
+	_evac_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_evac_button.offset_left = -150.0
+	_evac_button.offset_right = -10.0
+	_evac_button.offset_top = 8.0
+	_evac_button.offset_bottom = 40.0
+	_evac_button.pressed.connect(mission.call_evac)
+	add_child(_evac_button)
 
 	_results_panel = PanelContainer.new()
 	_results_panel.set_anchors_preset(Control.PRESET_CENTER)
@@ -62,7 +62,8 @@ func _process(_delta: float) -> void:
 	if _mission.is_running:
 		_set_active(true)
 		var seconds := ceili(_mission.time_remaining)
-		_timer_label.text = "EVAC  %d:%02d" % [seconds / 60, seconds % 60]
+		_timer_label.text = "%s  %d:%02d" % ["EVAC INBOUND" if _mission.evac_called else "EVAC", seconds / 60, seconds % 60]
+		_evac_button.text = "Evac inbound" if _mission.evac_called else "Call evac (X)"
 		var loot := _mission.carried_loot()
 		_loot_label.text = "Loot carried: %.0f kg, value %.0f | caches left %d" % [loot.x, loot.y, _mission.caches.size()]
 
@@ -70,14 +71,14 @@ func _process(_delta: float) -> void:
 func _set_active(active: bool) -> void:
 	_timer_label.visible = active
 	_loot_label.visible = active
-	_extract_button.visible = active
+	_evac_button.visible = active
 
 
 func _on_mission_finished(result: MissionResult) -> void:
 	_set_active(false)
 	_timer_label.visible = true
 	_timer_label.text = "EVAC  closed"
-	_extract_button.hide()
+	_evac_button.hide()
 	_results_label.text = result.summary_text()
 	_results_panel.show()
 

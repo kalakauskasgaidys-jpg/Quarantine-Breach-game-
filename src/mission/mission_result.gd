@@ -21,7 +21,7 @@ var soldiers_left_behind: int = 0
 var civilians_extracted: int = 0
 ## Civilians killed or turned into zombies.
 var civilians_lost: int = 0
-## Civilians still on the map when the mission ended.
+## Civilians still on the map when the mission ended, or never found in their shelter.
 var civilians_left_behind: int = 0
 ## Total weight of the loot carried out by extracted soldiers.
 var loot_weight: float = 0.0

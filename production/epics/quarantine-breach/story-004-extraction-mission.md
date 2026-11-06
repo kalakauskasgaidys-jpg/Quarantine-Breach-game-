@@ -62,6 +62,7 @@ N/A (minimal — no control manifest)
 ## Files
 
 - `src/mission/civilian.gd`
+- `src/mission/civilian_shelter.gd`
 - `src/mission/evac_zone.gd`
 - `src/mission/mission.gd`
 - `src/mission/mission_controls.gd`

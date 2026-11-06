@@ -12,7 +12,7 @@ signal mission_finished(result: MissionResult)
 const HELP_TEXT := ("LMB click / drag: select | 1-3: squad | RMB: move | WASD: pan | wheel: zoom | K: kill selected (debug)\n"
 		+ "N: noise rings | H: horde heat map | T: day / night (debug)\n"
 		+ "E: use antidote / medic treats nearest infected | I: infect selected soldier (debug)\n"
-		+ "RMB cache: loot | RMB civilian: assign to selected squad (lowest number if several) | X / Extract button: extract all in EVAC")
+		+ "RMB cache: loot | RMB civilian: assign to selected squad (lowest number if several) | X / Call evac button: call the evac")
 ## Seconds between refreshes of the debug readout.
 const READOUT_INTERVAL: float = 0.25
 ## Launch arguments (after "--") that override the data files for testing and
@@ -196,13 +196,11 @@ func _setup_mission() -> void:
 	_mission = Mission.new()
 	_mission.name = "Mission"
 	add_child(_mission)
-	_mission.setup(_data.mission, _data.config["squad_colors"], time_limit, _fog, _tracker)
+	_mission.setup(_data.mission, _data.config["squad_colors"], time_limit, _fog, _tracker, _building_rects)
 	_mission.mission_finished.connect(_on_mission_finished)
 	_horde.set_extra_survivors(_mission.civilians)
 
 	_start_infected = _int_arg(args, ARG_START_INFECTED, int(_data.infection["debug"]["start_infected_count"]))
-	for i in mini(_start_infected, _mission.civilians.size()):
-		_mission.civilians[i].infectable.infect()
 
 	var hud := MissionHud.new()
 	$Hud.add_child(hud)

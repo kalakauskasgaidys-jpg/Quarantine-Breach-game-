@@ -107,6 +107,7 @@ const INFECTION_SCHEMA := {
 const MISSION_SCHEMA := {
 	"mission": {
 		"time_limit_seconds": [Kind.INTEGER, 1],
+		"evac_call_seconds": Kind.POSITIVE,
 	},
 	"evac": {
 		"position": Kind.ARRAY,
@@ -130,14 +131,19 @@ const MISSION_SCHEMA := {
 		"repath_interval": Kind.POSITIVE,
 		"color": Kind.COLOR,
 		"unassigned_color": Kind.COLOR,
-		"spots": Kind.ARRAY,
-		"squad_assignment": Kind.ARRAY,
+		"marker_color": Kind.COLOR,
+		"discover_range": Kind.POSITIVE,
+		"shelters": Kind.ARRAY,
 	},
 }
 const CACHE_SCHEMA := {
 	"position": Kind.ARRAY,
 	"weight": Kind.NON_NEGATIVE,
 	"value": Kind.NON_NEGATIVE,
+}
+const SHELTER_SCHEMA := {
+	"position": Kind.ARRAY,
+	"door": Kind.ARRAY,
 }
 const PRESET_SCHEMA := {
 	"display_name": Kind.STRING,
@@ -397,18 +403,23 @@ func _validate_mission_file() -> bool:
 		if caches[i].has("position"):
 			ok = _check_point(caches[i]["position"], where + ".position") and ok
 	var civilian: Dictionary = mission["civilians"]
-	var spots: Array = civilian["spots"]
-	for i in spots.size():
-		ok = _check_point(spots[i], "%s civilians.spots[%d]" % [MISSION_PATH, i]) and ok
-	if civilian["count"] > spots.size():
-		push_error("GameData: %s civilians.count (%d) exceeds the %d spots" % [MISSION_PATH, civilian["count"], spots.size()])
+	var entries: Array = civilian["shelters"]
+	for i in entries.size():
+		var where := "%s civilians.shelters[%d]" % [MISSION_PATH, i]
+		if not entries[i] is Dictionary:
+			push_error("GameData: %s must be an object" % where)
+			ok = false
+		elif not _check_schema(entries[i], SHELTER_SCHEMA, where):
+			ok = false
+		else:
+			ok = _check_point(entries[i]["position"], where + ".position") and ok
+			ok = _check_point(entries[i]["door"], where + ".door") and ok
+	if civilian["count"] > entries.size():
+		push_error("GameData: %s civilians.count (%d) exceeds the %d shelters" % [MISSION_PATH, civilian["count"], entries.size()])
 		ok = false
-	var assignment: Array = civilian["squad_assignment"]
-	if assignment.is_empty():
-		push_error("GameData: %s civilians.squad_assignment must not be empty" % MISSION_PATH)
+	if mission["mission"]["evac_call_seconds"] > mission["mission"]["time_limit_seconds"]:
+		push_error("GameData: %s mission.evac_call_seconds must not exceed time_limit_seconds" % MISSION_PATH)
 		ok = false
-	for i in assignment.size():
-		ok = _check_integer(assignment[i], 1, "%s civilians.squad_assignment[%d]" % [MISSION_PATH, i]) and ok
 	return ok
 
 

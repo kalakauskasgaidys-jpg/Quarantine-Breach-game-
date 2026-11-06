@@ -2,7 +2,7 @@ class_name MissionControls
 extends Node
 ## Input for the extraction mission (story 004), kept out of [Mission]. Right-clicking
 ## a supply cache orders the selected squads to loot it, right-clicking a civilian
-## assigns it to the selected squad, X asks the mission to extract. It hooks the
+## assigns it to the selected squad, X calls the evac. It hooks the
 ## selection controller's right-click, so a click on a cache or civilian gives no
 ## move order. Uses the physical key so the binding ignores keyboard layout.
 
@@ -23,7 +23,7 @@ func setup(mission: Mission, controller: SelectionController, camera: Camera3D, 
 func _unhandled_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo and key.physical_keycode == KEY_X:
-		_mission.request_extract()
+		_mission.call_evac()
 
 
 ## Returns true if the click hit a cache or civilian (and was handled).
